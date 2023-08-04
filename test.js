@@ -48,8 +48,39 @@ const createOutInvoice = () => {
   });
 };
 
+const createLink = () => {
+  crypta
+    .createPayLink({
+      description: "Holaprobando",
+      amount: 10,
+    })
+    .then((result) => {
+      console.log(result);
+    });
+};
+
+const getPayLink = () => {
+  crypta.getPayLink("NSrjDd").then((result) => {
+    console.log(result);
+  });
+};
+
+const updatePayLink = () => {
+  crypta
+    .updatePayLink("NSrjDd", {
+      amount: 10,
+      description: "Holaproban222",
+    })
+    .then((result) => {
+      console.log(result);
+    });
+};
+
+// updatePayLink();
+// getPayLink();
 // getPaymentStatus();
 // createInvoice();
 // createOutInvoice();
 // getWalletDetails();
 // decodeInvoice();
+// createLNUrl();

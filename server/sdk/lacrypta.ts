@@ -9,13 +9,14 @@ import {
   DecodeInvoiceResponse,
   Invoice,
   InvoiceStatusResponse,
+  LnUrlRequestArgs,
   MethodTypes,
   SDKConfig,
   WalletDetailsResponse,
 } from "./types";
 
 export class SDKCrypta {
-  baseUrl = "https://wallet.lacrypta.ar/api/v1/";
+  baseUrl = "https://wallet.lacrypta.ar";
   ADMIN_KEY = "";
   INVOICE_READ_KEY = "";
 
@@ -28,7 +29,17 @@ export class SDKCrypta {
     this.INVOICE_READ_KEY = config.INVOICE_READ_KEY;
   }
 
-  call(endpoint: string, method: MethodTypes, key: string, params = {}) {
+  call(
+    endpoint: string,
+    method: MethodTypes,
+    key: string,
+    params: Record<string, any> = {},
+    extension: string = ""
+  ) {
+    const formattedUrl = `${this.baseUrl}/${
+      extension ? `${extension}/api/v1` : "api/v1"
+    }`;
+
     const options: RequestInit = {
       method,
       headers: {
@@ -37,9 +48,9 @@ export class SDKCrypta {
       },
     };
 
-    if (method !== "GET") options.body = JSON.stringify(params);
+    if (method !== "GET" && params) options.body = JSON.stringify(params);
 
-    return fetch(`${this.baseUrl}/${endpoint}`, options)
+    return fetch(`${formattedUrl}/${endpoint}`, options)
       .then((response) => response.json())
       .then((data) => {
         return data;
@@ -83,5 +94,44 @@ export class SDKCrypta {
       .then((invoice) => {
         return invoice;
       });
+  }
+
+  createPayLink(linkConfig: LnUrlRequestArgs) {
+    return this.call("links", "POST", this.ADMIN_KEY, linkConfig, "lnurlp");
+  }
+
+  listPayLinks() {
+    return this.call("links", "GET", this.INVOICE_READ_KEY, {}, "lnurlp");
+  }
+
+  getPayLink(payId: string) {
+    return this.call(
+      `links/${payId}`,
+      "GET",
+      this.INVOICE_READ_KEY,
+      {},
+      "lnurlp"
+    );
+  }
+
+  updatePayLink(
+    payId: string,
+    updateConfig: { description: string; amount: number }
+  ) {
+    return this.call(
+      `links/${payId}`,
+      "PUT",
+      this.ADMIN_KEY,
+      {
+        ...updateConfig,
+        min: updateConfig.amount,
+        max: updateConfig.amount,
+      },
+      "lnurlp"
+    );
+  }
+
+  deletePayLink(payId: string) {
+    return this.call(`links/${payId}`, "DELETE", this.ADMIN_KEY, {}, "lnurlp");
   }
 }

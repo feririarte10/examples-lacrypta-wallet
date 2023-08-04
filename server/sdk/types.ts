@@ -15,7 +15,7 @@ export interface SDKConfig {
   INVOICE_READ_KEY: string;
 }
 
-export type MethodTypes = "GET" | "POST" | "PUT";
+export type MethodTypes = "GET" | "POST" | "PUT" | "DELETE";
 
 export type WalletDetailsResponse = {
   name: string;
@@ -61,4 +61,14 @@ export type DecodeInvoiceResponse = {
   secret: string;
   route_hints: Array<any>;
   min_final_cltv_expiry: number;
+};
+
+export type LnUrlRequestArgs = {
+  amount: number;
+  description: string;
+  min?: number;
+  max?: number;
+  webhook_url: string;
+  comment_chars?: number;
+  username?: string;
 };
