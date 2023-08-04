@@ -12,15 +12,17 @@ const handlePayment = async (data: any) => {
   });
 
   if (data && data.payment_hash) {
-    crypta.getPaymentStatus(data.payment_hash).then((paymentInfo) => {
-      if (paymentInfo && paymentInfo.paid) {
+    crypta.getInvoiceStatus(data.payment_hash).then((paymentInfo) => {
+      if (paymentInfo && paymentInfo.paid)
         crypta
-          .createInvoice("fer@hodl.ar", paymentInfo.details.amount)
+          .createOutgoingInvoice(
+            "fer@hodl.ar",
+            paymentInfo.details.amount / 1000
+          )
           .then((invoiceInfo) => {
             if (invoiceInfo && invoiceInfo.invoice)
               crypta.payInvoice(invoiceInfo.invoice);
           });
-      }
     });
   }
 };

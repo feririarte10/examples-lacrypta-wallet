@@ -1,13 +1,18 @@
 import fetch from "cross-fetch";
 import lnurl from "lnurl-pay";
-import { Satoshis } from "lnurl-pay/dist/types/types";
-
-interface SDKConfig {
-  ADMIN_KEY: string;
-  INVOICE_READ_KEY: string;
-}
-
-type MethodTypes = "GET" | "POST" | "PUT";
+import {
+  LnUrlRequestInvoiceResponse,
+  Satoshis,
+} from "lnurl-pay/dist/types/types";
+import {
+  CreateInvoiceResponse,
+  DecodeInvoiceResponse,
+  Invoice,
+  InvoiceStatusResponse,
+  MethodTypes,
+  SDKConfig,
+  WalletDetailsResponse,
+} from "./types";
 
 export class SDKCrypta {
   baseUrl = "https://wallet.lacrypta.ar/api/v1/";
@@ -41,15 +46,12 @@ export class SDKCrypta {
       });
   }
 
-  async createInvoice(lnUrlOrAddress: string, msats: number) {
-    const satoshisToSend = msats / 1000;
+  walletDetails(): Promise<WalletDetailsResponse> {
+    return this.call("wallet", "GET", this.INVOICE_READ_KEY);
+  }
 
-    const invoice = await lnurl.requestInvoice({
-      lnUrlOrAddress,
-      tokens: satoshisToSend as Satoshis,
-    });
-
-    return invoice;
+  createInvoice(invoiceConfig: Invoice): Promise<CreateInvoiceResponse> {
+    return this.call("payments", "POST", this.INVOICE_READ_KEY, invoiceConfig);
   }
 
   payInvoice(invoice: string) {
@@ -59,7 +61,27 @@ export class SDKCrypta {
     });
   }
 
-  getPaymentStatus(paymentHash: string) {
+  getInvoiceStatus(paymentHash: string): Promise<InvoiceStatusResponse> {
     return this.call(`payments/${paymentHash}`, "GET", this.INVOICE_READ_KEY);
+  }
+
+  decodeInvoice(lnUrlOrBolt11: string): Promise<DecodeInvoiceResponse> {
+    return this.call("payments/decode", "POST", this.INVOICE_READ_KEY, {
+      data: lnUrlOrBolt11,
+    });
+  }
+
+  createOutgoingInvoice(
+    lnUrlOrAddress: string,
+    sats: number
+  ): Promise<LnUrlRequestInvoiceResponse> {
+    return lnurl
+      .requestInvoice({
+        lnUrlOrAddress,
+        tokens: sats as Satoshis,
+      })
+      .then((invoice) => {
+        return invoice;
+      });
   }
 }
